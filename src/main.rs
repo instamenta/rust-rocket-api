@@ -1,6 +1,8 @@
 #[macro_use] extern crate rocket;
 
+use dotenvy::dotenv;
 use bookstore::db;
+use bookstore::api;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -9,11 +11,15 @@ fn index() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
+    dotenv().ok();
+
     let pool = db::pool::create_database_pool();
 
-    let user_list = db::repositories::user::load_users(pool);
-
-    println!("Loaded Users {:?}", user_list);
-
-    rocket::build().mount("/", routes![index])
+    rocket::build()
+        .manage(&pool)
+        .mount("/auth", routes![
+            api::handlers::auth::register,
+            api::handlers::auth::login,
+        ])
+        .mount("/", routes![index])
 }
