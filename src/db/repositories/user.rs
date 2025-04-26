@@ -4,13 +4,18 @@ use crate::db::models::user::User;
 use crate::db::pool::DbPool;
 use crate::db::schema::users::dsl::users;
 
-#[derive(Clone)]
-pub struct UserRepository<'a> {
-    pool: &'a DbPool,
+pub trait IUserRepository: Send + Sync {
+    fn get_user_by_username(&self, username: &str) -> Option<User>;
+    fn create_user(&self, username: String, password: String) -> User;
 }
 
-impl<'a> UserRepository<'a> {
-    pub fn new(pool: &'a DbPool) -> Self {
+#[derive(Clone)]
+pub struct UserRepository {
+    pool: DbPool,
+}
+
+impl UserRepository {
+    pub fn new(pool: DbPool) -> Self {
         Self { pool }
     }
 
@@ -21,7 +26,6 @@ impl<'a> UserRepository<'a> {
     }
 
     pub fn create_user(&self, username: String, password: String) -> User {
-        // Dereference the connection and pass the actual connection to Diesel
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
         let new_user = User {
