@@ -6,9 +6,11 @@ default-run = "bookstore"
 
 [dependencies]
 tokio = { version = "1.44.2", features = ["full"]}
+rocket = "0.5.1"
+
 diesel = { version = "2.2.10", features = ["postgres", "uuid", "r2d2"] }
 r2d2 = "0.8.10"
 
 dotenvy = "0.15"
-
 uuid = { version = "1.16.0", features = ["v4", "serde"] }
+
