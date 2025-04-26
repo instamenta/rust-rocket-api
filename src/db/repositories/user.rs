@@ -10,22 +10,23 @@ pub trait IUserRepository: Send + Sync {
 }
 
 #[derive(Clone)]
-pub struct UserRepository {
-    pool: DbPool,
-}
+pub struct UserRepository { pool: DbPool }
 
 impl UserRepository {
-    pub fn new(pool: DbPool) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: DbPool) -> Self { Self { pool } }
+}
 
-    pub fn load_users(&self) -> Vec<User> {
+impl IUserRepository for UserRepository {
+    fn get_user_by_username(&self, search_username: &str) -> Option<User> {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
-        users.load::<User>(&mut conn).expect("Failed to load users")
+        users
+            .filter(crate::db::schema::users::dsl::username.eq(search_username))
+            .first::<User>(&mut conn)
+            .ok()
     }
 
-    pub fn create_user(&self, username: String, password: String) -> User {
+    fn create_user(&self, username: String, password: String) -> User {
         let mut conn = self.pool.get().expect("Failed to get db connection");
 
         let new_user = User {
@@ -38,14 +39,5 @@ impl UserRepository {
             .values(&new_user)
             .get_result::<User>(&mut conn)
             .unwrap()
-    }
-
-    pub fn get_user_by_username(&self, search_username: &str) -> Option<User> {
-        let mut conn = self.pool.get().expect("Failed to get db connection");
-
-        users
-            .filter(crate::db::schema::users::dsl::username.eq(search_username))
-            .first::<User>(&mut conn)
-            .ok()
     }
 }

@@ -4,14 +4,14 @@ use rocket::serde::json::Json;
 use crate::api::dto;
 use crate::api::dto::auth::AuthResponse;
 use crate::api::dto::generic::{HttpResponse};
-use crate::db::repositories::user::UserRepository;
+use crate::db::repositories::user::{IUserRepository};
 use crate::utils::bcrypt::BCrypt;
 use crate::utils::jwt::JWT;
 
 #[post("/login", data = "<auth_data>")]
 pub fn login(
     auth_data: Json<dto::auth::AuthRequest>,
-    user_repository: &State<UserRepository>,
+    user_repository: &State<Box<dyn IUserRepository>>,
     jwt: &State<JWT>,
 ) -> (http::Status, Json<HttpResponse<AuthResponse>>) {
     // TODO: validate data
@@ -41,7 +41,7 @@ pub fn login(
 #[post("/register", data = "<auth_data>")]
 pub fn register(
     auth_data: Json<dto::auth::AuthRequest>,
-    user_repository: &State<UserRepository>,
+    user_repository: &State<Box<dyn IUserRepository>>,
     jwt: &State<JWT>,
 ) -> (http::Status, Json<HttpResponse<AuthResponse>>) {
     // TODO: validate username and password
