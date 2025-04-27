@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2024"
 default-run = "bookstore"
 
+[features]
+unit-tests = []
+integration-tests = []
+e2e-tests = []
+
 [dependencies]
 tokio = { version = "1.44.2", features = ["full"]}
 rocket = { version = "0.5.1", features = ["json"] }
