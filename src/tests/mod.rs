@@ -1,4 +1,5 @@
 pub mod mocks;
-pub mod test_utils;
-pub mod api;
-mod unit;
+pub mod unit;
+pub mod integration;
+pub mod e2e;
+pub mod utils;
