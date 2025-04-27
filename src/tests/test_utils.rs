@@ -6,7 +6,7 @@ use crate::api;
 use crate::db::repositories::user::IUserRepository;
 
 pub async fn setup_rocket() -> Client {
-    let user_repository: Box<dyn IUserRepository> = Box::new(MockUserRepository {});
+    let user_repository: Box<dyn IUserRepository> = Box::new(MockUserRepository::new());
     let jwt = JWT::new(b"test_secret");
 
     let rocket = rocket::build()

@@ -1,12 +1,12 @@
-use rocket::serde::Serialize;
+use rocket::serde::{Serialize, Deserialize, DeserializeOwned};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct HttpErrorMessage {
     pub message: String,
 }
 
-#[derive(Serialize)]
-#[serde(bound = "T: Serialize")]
+#[derive(Serialize, Deserialize)]
+#[serde(bound = "T: Serialize + DeserializeOwned")]
 pub enum HttpResponse <T> {
     Success(T),
     Error(HttpErrorMessage),
