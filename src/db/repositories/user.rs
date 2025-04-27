@@ -1,8 +1,8 @@
-use diesel::prelude::*;
-use uuid::Uuid;
 use crate::db::models::user::User;
 use crate::db::pool::DbPool;
 use crate::db::schema::users::dsl::users;
+use diesel::prelude::*;
+use uuid::Uuid;
 
 pub trait IUserRepository: Send + Sync {
     fn get_user_by_username(&self, username: &str) -> Option<User>;
@@ -10,10 +10,14 @@ pub trait IUserRepository: Send + Sync {
 }
 
 #[derive(Clone)]
-pub struct UserRepository { pool: DbPool }
+pub struct UserRepository {
+    pool: DbPool,
+}
 
 impl UserRepository {
-    pub fn new(pool: DbPool) -> Self { Self { pool } }
+    pub fn new(pool: DbPool) -> Self {
+        Self { pool }
+    }
 }
 
 impl IUserRepository for UserRepository {

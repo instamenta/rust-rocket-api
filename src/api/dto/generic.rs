@@ -1,4 +1,4 @@
-use rocket::serde::{Serialize, Deserialize, DeserializeOwned};
+use rocket::serde::{Deserialize, DeserializeOwned, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct HttpErrorMessage {
@@ -7,12 +7,12 @@ pub struct HttpErrorMessage {
 
 #[derive(Serialize, Deserialize)]
 #[serde(bound = "T: Serialize + DeserializeOwned")]
-pub enum HttpResponse <T> {
+pub enum HttpResponse<T> {
     Success(T),
     Error(HttpErrorMessage),
 }
 
-impl <T> HttpResponse<T> {
+impl<T> HttpResponse<T> {
     pub(crate) fn error(message: String) -> Self {
         HttpResponse::Error(HttpErrorMessage { message })
     }
@@ -21,4 +21,3 @@ impl <T> HttpResponse<T> {
         HttpResponse::Success(data)
     }
 }
-

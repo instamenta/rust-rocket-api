@@ -11,4 +11,3 @@ impl BCrypt {
         verify(password, hashed).unwrap_or(false)
     }
 }
-

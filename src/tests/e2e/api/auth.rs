@@ -1,25 +1,19 @@
 #[cfg(test)]
 mod tests {
-    use rocket::http::{Status, ContentType};
-    use rocket::tokio;
-    use serde_json::from_str;
-
-    use crate::tests::test_utils;
     use crate::api::dto::auth::AuthResponse;
     use crate::api::dto::generic::HttpResponse;
-    
-    async fn parse_response<T: for<'de> serde::Deserialize<'de>>(response: rocket::local::asynchronous::LocalResponse<'_>) -> T {
-        let body = response.into_string().await.expect("response body");
-        from_str::<T>(&body).expect("valid JSON")
-    }
-    
+    use crate::tests::utils::helpers::parse_response;
+    use crate::tests::utils::setup::rocket_with_db;
+    use rocket::http::{ContentType, Status};
+
     #[tokio::test]
     async fn test_register_success() {
-        let client = test_utils::setup_rocket().await;
+        let client = rocket_with_db().await;
 
-        let response = client.post("/auth/register")
+        let response = client
+            .post("/auth/register")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "testuser", "password": "password123" }"#)
+            .body(r#"{ "username": "newuser", "password": "password123" }"#)
             .dispatch()
             .await;
 
@@ -33,24 +27,25 @@ mod tests {
             }
             _ => panic!("Expected success response"),
         }
-
     }
 
     #[tokio::test]
     async fn test_register_conflict() {
-        let client = test_utils::setup_rocket().await;
+        let client = rocket_with_db().await;
 
-        // First register
-        client.post("/auth/register")
+        // First registration
+        client
+            .post("/auth/register")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "existing_user", "password": "password123" }"#)
+            .body(r#"{ "username": "existinguser", "password": "password123" }"#)
             .dispatch()
             .await;
 
-        // Try to register again
-        let response = client.post("/auth/register")
+        // Second registration attempt
+        let response = client
+            .post("/auth/register")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "existing_user", "password": "password123" }"#)
+            .body(r#"{ "username": "existinguser", "password": "password123" }"#)
             .dispatch()
             .await;
 
@@ -62,25 +57,27 @@ mod tests {
             HttpResponse::Error(err) => {
                 assert_eq!(err.message, "User already registered");
             }
-            _ => panic!("Expected error response"),
+            _ => panic!("Expected conflict error response"),
         }
     }
 
     #[tokio::test]
     async fn test_login_success() {
-        let client = test_utils::setup_rocket().await;
+        let client = rocket_with_db().await;
 
-        // Register the user first
-        client.post("/auth/register")
+        // Register first
+        client
+            .post("/auth/register")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "login_user", "password": "password123" }"#)
+            .body(r#"{ "username": "loginuser", "password": "password123" }"#)
             .dispatch()
             .await;
 
         // Then login
-        let response = client.post("/auth/login")
+        let response = client
+            .post("/auth/login")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "login_user", "password": "password123" }"#)
+            .body(r#"{ "username": "loginuser", "password": "password123" }"#)
             .dispatch()
             .await;
 
@@ -92,25 +89,27 @@ mod tests {
             HttpResponse::Success(data) => {
                 assert!(!data.token.is_empty(), "Token should not be empty");
             }
-            _ => panic!("Expected success login response"),
+            _ => panic!("Expected successful login response"),
         }
     }
 
     #[tokio::test]
     async fn test_login_invalid_password() {
-        let client = test_utils::setup_rocket().await;
+        let client = rocket_with_db().await;
 
-        // Register the user first
-        client.post("/auth/register")
+        // Register first
+        client
+            .post("/auth/register")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "wrong_pass_user", "password": "password123" }"#)
+            .body(r#"{ "username": "wrongpassuser", "password": "password123" }"#)
             .dispatch()
             .await;
 
-        // Try to login with wrong password
-        let response = client.post("/auth/login")
+        // Try login with wrong password
+        let response = client
+            .post("/auth/login")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "wrong_pass_user", "password": "wrongpassword" }"#)
+            .body(r#"{ "username": "wrongpassuser", "password": "wrongpass" }"#)
             .dispatch()
             .await;
 
@@ -122,18 +121,18 @@ mod tests {
             HttpResponse::Error(err) => {
                 assert_eq!(err.message, "Invalid password");
             }
-            _ => panic!("Expected error response for invalid password"),
+            _ => panic!("Expected invalid password error"),
         }
     }
 
     #[tokio::test]
     async fn test_login_user_not_found() {
-        let client = test_utils::setup_rocket().await;
+        let client = rocket_with_db().await;
 
-        // Try to login without registering
-        let response = client.post("/auth/login")
+        let response = client
+            .post("/auth/login")
             .header(ContentType::JSON)
-            .body(r#"{ "username": "nonexistent_user", "password": "whatever" }"#)
+            .body(r#"{ "username": "nonexistent", "password": "whatever" }"#)
             .dispatch()
             .await;
 
@@ -145,7 +144,7 @@ mod tests {
             HttpResponse::Error(err) => {
                 assert_eq!(err.message, "User not found");
             }
-            _ => panic!("Expected error response for user not found"),
+            _ => panic!("Expected user not found error"),
         }
     }
 }

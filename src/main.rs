@@ -1,10 +1,11 @@
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
-use dotenvy::dotenv;
-use bookstore::db;
 use bookstore::api;
+use bookstore::db;
 use bookstore::db::repositories::user::IUserRepository;
 use bookstore::utils::jwt::JWT;
+use dotenvy::dotenv;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -25,13 +26,11 @@ fn rocket() -> _ {
     let user_repository = db::repositories::user::UserRepository::new(pool);
 
     rocket::build()
-
         .manage(jwt)
         .manage(Box::new(user_repository) as Box<dyn IUserRepository>)
-
-        .mount("/auth", routes![
-            api::handlers::auth::register,
-            api::handlers::auth::login,
-        ])
+        .mount(
+            "/auth",
+            routes![api::handlers::auth::register, api::handlers::auth::login,],
+        )
         .mount("/", routes![index])
 }

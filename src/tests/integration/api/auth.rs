@@ -1,23 +1,18 @@
 #[cfg(test)]
 mod tests {
-    use rocket::http::{Status, ContentType};
-    use rocket::tokio;
-    use serde_json::from_str;
-
     use crate::api::dto::auth::AuthResponse;
     use crate::api::dto::generic::HttpResponse;
+    use crate::tests::utils::helpers::parse_response;
     use crate::tests::utils::setup;
-    
-    async fn parse_response<T: for<'de> serde::Deserialize<'de>>(response: rocket::local::asynchronous::LocalResponse<'_>) -> T {
-        let body = response.into_string().await.expect("response body");
-        from_str::<T>(&body).expect("valid JSON")
-    }
-    
+    use rocket::http::{ContentType, Status};
+    use rocket::tokio;
+
     #[tokio::test]
     async fn test_register_success() {
         let client = setup::rocket_with_mock_db().await;
 
-        let response = client.post("/auth/register")
+        let response = client
+            .post("/auth/register")
             .header(ContentType::JSON)
             .body(r#"{ "username": "testuser", "password": "password123" }"#)
             .dispatch()
@@ -33,7 +28,6 @@ mod tests {
             }
             _ => panic!("Expected success response"),
         }
-
     }
 
     #[tokio::test]
@@ -41,14 +35,16 @@ mod tests {
         let client = setup::rocket_with_mock_db().await;
 
         // First register
-        client.post("/auth/register")
+        client
+            .post("/auth/register")
             .header(ContentType::JSON)
             .body(r#"{ "username": "existing_user", "password": "password123" }"#)
             .dispatch()
             .await;
 
         // Try to register again
-        let response = client.post("/auth/register")
+        let response = client
+            .post("/auth/register")
             .header(ContentType::JSON)
             .body(r#"{ "username": "existing_user", "password": "password123" }"#)
             .dispatch()
@@ -71,14 +67,16 @@ mod tests {
         let client = setup::rocket_with_mock_db().await;
 
         // Register the user first
-        client.post("/auth/register")
+        client
+            .post("/auth/register")
             .header(ContentType::JSON)
             .body(r#"{ "username": "login_user", "password": "password123" }"#)
             .dispatch()
             .await;
 
         // Then login
-        let response = client.post("/auth/login")
+        let response = client
+            .post("/auth/login")
             .header(ContentType::JSON)
             .body(r#"{ "username": "login_user", "password": "password123" }"#)
             .dispatch()
@@ -101,14 +99,16 @@ mod tests {
         let client = setup::rocket_with_mock_db().await;
 
         // Register the user first
-        client.post("/auth/register")
+        client
+            .post("/auth/register")
             .header(ContentType::JSON)
             .body(r#"{ "username": "wrong_pass_user", "password": "password123" }"#)
             .dispatch()
             .await;
 
         // Try to login with wrong password
-        let response = client.post("/auth/login")
+        let response = client
+            .post("/auth/login")
             .header(ContentType::JSON)
             .body(r#"{ "username": "wrong_pass_user", "password": "wrongpassword" }"#)
             .dispatch()
@@ -131,7 +131,8 @@ mod tests {
         let client = setup::rocket_with_mock_db().await;
 
         // Try to login without registering
-        let response = client.post("/auth/login")
+        let response = client
+            .post("/auth/login")
             .header(ContentType::JSON)
             .body(r#"{ "username": "nonexistent_user", "password": "whatever" }"#)
             .dispatch()

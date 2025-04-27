@@ -1,5 +1,5 @@
-use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
-use serde::{Serialize, Deserialize};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -27,13 +27,21 @@ impl JWT {
             exp: expiration,
         };
 
-        encode(&Header::default(), &claims, &EncodingKey::from_secret(self.secret)).unwrap()
+        encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(self.secret),
+        )
+        .unwrap()
     }
 
     pub fn verify_token(&self, token: &str) -> Option<Claims> {
-        decode::<Claims>(token, &DecodingKey::from_secret(self.secret), &Validation::default())
-            .map(|data| data.claims)
-            .ok()
+        decode::<Claims>(
+            token,
+            &DecodingKey::from_secret(self.secret),
+            &Validation::default(),
+        )
+        .map(|data| data.claims)
+        .ok()
     }
 }
-

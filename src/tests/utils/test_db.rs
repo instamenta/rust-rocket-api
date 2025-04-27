@@ -1,11 +1,13 @@
-use std::env;
-use diesel::{Connection, PgConnection, RunQueryDsl};
-use diesel::r2d2::ConnectionManager;
-use r2d2::Pool;
-use uuid::Uuid;
 use crate::db::pool::DbPool;
+use diesel::r2d2::ConnectionManager;
+use diesel::{Connection, PgConnection, RunQueryDsl};
+use r2d2::Pool;
+use std::env;
+use uuid::Uuid;
 
-pub struct TestDatabase { pub database_name: String, }
+pub struct TestDatabase {
+    pub database_name: String,
+}
 
 impl TestDatabase {
     pub fn new() -> Self {
@@ -35,7 +37,9 @@ impl TestDatabase {
         let db_url = format!("{}/{}", server_url, self.database_name);
 
         let manager = ConnectionManager::<PgConnection>::new(db_url);
-        Pool::builder().build(manager).expect("Failed to create pool.")
+        Pool::builder()
+            .build(manager)
+            .expect("Failed to create pool.")
     }
 }
 

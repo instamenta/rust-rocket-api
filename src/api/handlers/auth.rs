@@ -1,12 +1,12 @@
-use rocket::*;
-use rocket::http;
-use rocket::serde::json::Json;
 use crate::api::dto;
 use crate::api::dto::auth::AuthResponse;
-use crate::api::dto::generic::{HttpResponse};
-use crate::db::repositories::user::{IUserRepository};
+use crate::api::dto::generic::HttpResponse;
+use crate::db::repositories::user::IUserRepository;
 use crate::utils::bcrypt::BCrypt;
 use crate::utils::jwt::JWT;
+use rocket::http;
+use rocket::serde::json::Json;
+use rocket::*;
 
 #[post("/login", data = "<auth_data>")]
 pub fn login(
@@ -28,7 +28,9 @@ pub fn login(
 
             (
                 http::Status::Ok,
-                Json(HttpResponse::success(AuthResponse { token: jwt.create_token(&user.username) })),
+                Json(HttpResponse::success(AuthResponse {
+                    token: jwt.create_token(&user.username),
+                })),
             )
         }
         None => (
@@ -49,7 +51,7 @@ pub fn register(
     if let Some(_) = user_repository.get_user_by_username(&auth_data.username) {
         return (
             http::Status::Conflict,
-            Json(HttpResponse::error("User already registered".to_string() )),
+            Json(HttpResponse::error("User already registered".to_string())),
         );
     }
 
@@ -57,7 +59,9 @@ pub fn register(
 
     let new_user = user_repository.create_user(auth_data.username.clone(), hashed_password);
 
-    let response = AuthResponse { token: jwt.create_token(new_user.username.as_str()) };
+    let response = AuthResponse {
+        token: jwt.create_token(new_user.username.as_str()),
+    };
 
     (http::Status::Ok, Json(HttpResponse::success(response)))
 }

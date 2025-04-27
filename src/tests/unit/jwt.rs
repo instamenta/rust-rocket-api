@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use crate::utils::jwt::JWT;
@@ -29,7 +28,10 @@ mod tests {
 
         let claims = jwt_bad.verify_token(&token);
 
-        assert!(claims.is_none(), "Verification should fail with wrong secret");
+        assert!(
+            claims.is_none(),
+            "Verification should fail with wrong secret"
+        );
     }
 
     #[test]
@@ -40,6 +42,9 @@ mod tests {
 
         let claims = jwt.verify_token(invalid_token);
 
-        assert!(claims.is_none(), "Should fail for completely invalid token format");
+        assert!(
+            claims.is_none(),
+            "Should fail for completely invalid token format"
+        );
     }
 }

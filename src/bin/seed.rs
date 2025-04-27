@@ -1,13 +1,13 @@
-use diesel::prelude::*;
-use diesel::pg::PgConnection;
-use uuid::Uuid;
 use bookstore::db;
 use bookstore::db::models::user::User;
+use diesel::pg::PgConnection;
+use diesel::prelude::*;
+use uuid::Uuid;
 
 fn main() {
     let pool = db::pool::create_database_pool();
     let mut conn = pool.get().expect("Failed to get db connection");
-    
+
     seed_users(&mut conn)
 }
 

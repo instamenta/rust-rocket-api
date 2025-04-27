@@ -1,25 +1,23 @@
-use rocket::local::asynchronous::Client;
-use rocket::routes;
-use crate::{api, db};
 use crate::db::repositories::user::{IUserRepository, UserRepository};
 use crate::tests::mocks::mock_user_repository::MockUserRepository;
 use crate::tests::utils::test_db::TestDatabase;
 use crate::utils::jwt::JWT;
+use crate::{api, db};
+use rocket::local::asynchronous::Client;
+use rocket::routes;
 
 pub async fn rocket_with_mock_db() -> Client {
     let user_repository: Box<dyn IUserRepository> = Box::new(MockUserRepository::new());
     let jwt = JWT::new(b"test_secret");
 
-    let rocket = rocket::build()
-        .manage(user_repository)
-        .manage(jwt)
-        
-        .mount("/auth", routes![
-            api::handlers::auth::register,
-            api::handlers::auth::login
-        ]);
+    let rocket = rocket::build().manage(user_repository).manage(jwt).mount(
+        "/auth",
+        routes![api::handlers::auth::register, api::handlers::auth::login],
+    );
 
-    Client::tracked(rocket).await.expect("valid rocket instance")
+    Client::tracked(rocket)
+        .await
+        .expect("valid rocket instance")
 }
 
 pub async fn rocket_with_db() -> Client {
@@ -36,11 +34,12 @@ pub async fn rocket_with_db() -> Client {
     let rocket = rocket::build()
         .manage(jwt)
         .manage(Box::new(user_repository) as Box<dyn IUserRepository>)
+        .mount(
+            "/auth",
+            routes![api::handlers::auth::register, api::handlers::auth::login],
+        );
 
-        .mount("/auth", routes![
-            api::handlers::auth::register,
-            api::handlers::auth::login
-        ]);
-
-    Client::tracked(rocket).await.expect("valid rocket instance")
+    Client::tracked(rocket)
+        .await
+        .expect("valid rocket instance")
 }
